@@ -6,6 +6,7 @@ public class WinConditions : MonoBehaviour
     public GameObject[] collectibles;
     public GameObject endGameOptions;
     public TextMeshProUGUI collectibleQuantityText;
+    public TextMeshProUGUI EndGameText;
 
     private int totalCollectibles;
     private int collectedCount = 0;
@@ -30,6 +31,8 @@ public class WinConditions : MonoBehaviour
 
     public void TriggerEndGame()
     {
+        Cursor.lockState = CursorLockMode.None;
+        EndGameText.text = $"Terminado.\nVocê coletou: {collectedCount} de {totalCollectibles} Items";
         Time.timeScale = 0f;
         endGameOptions.SetActive(true);
     }
