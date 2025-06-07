@@ -6,7 +6,7 @@ public class NPCStatesController : MonoBehaviour
 {
     [Header("Estados dos Npcs")]
     public NPCStates currentState = NPCStates.Walking;
-    public TextMeshPro StateText;
+    public TextMeshProUGUI StateText;
     public NavMeshAgent agent;
 
     [Header("Pontos de patrulha")]
