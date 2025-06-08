@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.AI;
+using KinematicCharacterController.Examples;
 
 public class NPCStatesController : MonoBehaviour
 {
@@ -19,17 +20,32 @@ public class NPCStatesController : MonoBehaviour
     private int currentSearchIndex;
     private Vector3 heardPosition;
 
+    [Header("Perceguir Jogador")]
+    private Transform Player;
+    public Transform SearchPoint1;
+    public Transform SearchPoint2;
+    public Transform SearchPoint3;
+    public bool CanSee;
+
+    [Header("Atacar Jogador")]
+    float wait;
+
+
     private float searchTime = 5f;
     private float elapsedSearchTime = 0f;
 
     private void Start()
     {
+        Player = FindFirstObjectByType<ExampleCharacterController>().transform;
         UpdateState(NPCStates.Walking);
         NextPatrolPoint();
     }
 
     void FixedUpdate()
     {
+        if (wait > 0)
+        wait -= Time.deltaTime;
+        Debug.Log(Vector3.Distance(transform.position, Player.position));
         switch (currentState)
         {
             case NPCStates.Walking:
@@ -74,6 +90,38 @@ public class NPCStatesController : MonoBehaviour
                     UpdateState(NPCStates.GaveUpSearch);
                 }
                 break;
+            case NPCStates.Chasing:
+                agent.SetDestination(Player.position);
+                if (!CanSee)
+                {
+                    SearchPoint1.position = Player.position + Player.transform.forward * 10;
+                    SearchPoint2.position = Player.position + Player.transform.forward * 10 + Player.transform.right * 5;
+                    SearchPoint3.position = Player.position + Player.transform.forward * 10 - Player.transform.right * 5;
+                    Transform[] Lookers;
+                    Lookers = new Transform[3];
+                    Lookers[0] = SearchPoint1;
+                    Lookers[1] = SearchPoint2;
+                    Lookers[2] = SearchPoint3;
+                    UpdateState(NPCStates.Walking);
+                    HeardSound(Player.position, Lookers);
+                }
+                if (Vector3.Distance(transform.position, Player.position) <= 2)
+                {
+                    UpdateState(NPCStates.Attacking);
+                }
+                    break;
+            case NPCStates.Attacking:
+                if (Vector3.Distance(transform.position, Player.position) < 3 && wait <= 0)
+                {
+                    Debug.Log("Atack");
+                    WinConditions End = GameManager.FindFirstObjectByType<WinConditions>();
+                    End.TriggerEndGame();
+                }
+                else if (wait <= 0)
+                {
+                    UpdateState(NPCStates.Chasing);
+                }
+                break;
         }
     }
 
@@ -103,6 +151,10 @@ public class NPCStatesController : MonoBehaviour
             case NPCStates.Searching:
                 StateText.text = "NPC procurando o jogador";
                 elapsedSearchTime = 0f;
+                if (CanSee)
+                {
+                    UpdateState(NPCStates.Chasing);
+                }
                 break;
 
             case NPCStates.GaveUpSearch:
@@ -110,6 +162,19 @@ public class NPCStatesController : MonoBehaviour
                 currentSearchPoints = null;
                 agent.SetDestination(lastPatrolPointBeforeSound.position);
                 UpdateState(NPCStates.Walking);
+                break;
+
+            case NPCStates.Chasing:
+                StateText.text = "NPC te encontrou!";
+                agent.speed = 6f;
+                break;
+
+            case NPCStates.Attacking:
+                StateText.text = "NPC atacando!";
+                agent.SetDestination(transform.position);
+                agent.speed = 0;
+                if (wait <= 0)
+                wait = .5f;
                 break;
         }
     }
