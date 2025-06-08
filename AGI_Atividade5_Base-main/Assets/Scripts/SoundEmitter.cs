@@ -12,14 +12,14 @@ public class SoundEmitter : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
     }
 
-    private void Start()
+    private void OnEnable()
     {
         Emit();
     }
 
     public void Emit()
     {
-        audioSource.Play();
+        audioSource.PlayOneShot(audioSource.clip);
 
         float radius = audioSource.maxDistance;
 
