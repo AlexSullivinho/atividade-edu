@@ -1,8 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using KinematicCharacterController;
-using System;
 
 namespace KinematicCharacterController.Examples
 {
@@ -70,6 +67,9 @@ namespace KinematicCharacterController.Examples
         public Transform MeshRoot;
         public Transform CameraFollowPoint;
         public float CrouchedCapsuleHeight = 1f;
+
+        [Header("Anims")]
+        public Animator anim;
 
         public CharacterState CurrentCharacterState { get; private set; }
 
@@ -142,6 +142,14 @@ namespace KinematicCharacterController.Examples
         /// </summary>
         public void SetInputs(ref PlayerCharacterInputs inputs)
         {
+            if (inputs.MoveAxisForward != 0 || inputs.MoveAxisRight != 0)
+            {
+                anim.SetBool("Moving", true);
+            }
+            else
+            {
+                anim.SetBool("Moving", false);
+            }
             // Clamp input
             Vector3 moveInputVector = Vector3.ClampMagnitude(new Vector3(inputs.MoveAxisRight, 0f, inputs.MoveAxisForward), 1f);
 

@@ -36,4 +36,12 @@ public class WinConditions : MonoBehaviour
         Time.timeScale = 0f;
         endGameOptions.SetActive(true);
     }
+    
+    public void TriggerGameOver()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        EndGameText.text = $"Você foi pego.";
+        Time.timeScale = 0f;
+        endGameOptions.SetActive(true);
+    }
 }

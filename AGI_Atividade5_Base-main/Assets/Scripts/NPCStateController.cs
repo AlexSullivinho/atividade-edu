@@ -30,6 +30,11 @@ public class NPCStatesController : MonoBehaviour
     [Header("Atacar Jogador")]
     float wait;
 
+<<<<<<< Updated upstream
+=======
+    [Header("Anim")]
+    public Animator anim;
+>>>>>>> Stashed changes
 
     private float searchTime = 5f;
     private float elapsedSearchTime = 0f;
@@ -43,6 +48,12 @@ public class NPCStatesController : MonoBehaviour
 
     void FixedUpdate()
     {
+<<<<<<< Updated upstream
+=======
+        anim.SetBool("Moving", currentState == NPCStates.Walking);
+        anim.SetBool("Attacking", currentState == NPCStates.Attacking);
+        anim.SetBool("Running", (currentState == NPCStates.Searching || currentState == NPCStates.Chasing));
+>>>>>>> Stashed changes
         if (wait > 0)
         wait -= Time.deltaTime;
         Debug.Log(Vector3.Distance(transform.position, Player.position));
@@ -115,7 +126,11 @@ public class NPCStatesController : MonoBehaviour
                 {
                     Debug.Log("Atack");
                     WinConditions End = GameManager.FindFirstObjectByType<WinConditions>();
+<<<<<<< Updated upstream
                     End.TriggerEndGame();
+=======
+                    End.TriggerGameOver();
+>>>>>>> Stashed changes
                 }
                 else if (wait <= 0)
                 {

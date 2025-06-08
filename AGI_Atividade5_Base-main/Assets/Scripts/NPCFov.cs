@@ -33,7 +33,11 @@ public class NPCFov : MonoBehaviour
         Angle = Vector3.Angle(target, transform.forward);
         if (!Physics.Raycast(transform.position, target, FOVDistance, Wall))
         {
+<<<<<<< Updated upstream
             if (Physics.Raycast(transform.position, target, FOVDistance, 3) && Angle <= 70)
+=======
+            if (Physics.Raycast(transform.position, target, FOVDistance, PlayerLayer) && Angle <= 70)
+>>>>>>> Stashed changes
             {
                 return true;
             }
