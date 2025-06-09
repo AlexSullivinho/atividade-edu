@@ -47,6 +47,6 @@ public class NPCFov : MonoBehaviour
     }
     private bool ChaserView()
     {
-        return (Physics.Raycast(transform.position, Player.position - transform.position, 20, PlayerLayer) && Angle <= 80);
+        return (!Physics.Raycast(transform.position, Player.position - transform.position, FOVDistance, Wall) && Physics.Raycast(transform.position, Player.position - transform.position, 20, PlayerLayer));
     }
 }

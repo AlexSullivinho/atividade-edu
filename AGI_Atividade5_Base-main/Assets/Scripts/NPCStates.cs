@@ -6,5 +6,6 @@ public enum NPCStates
     GaveUpSearch,
     HeardNoise,
     Chasing,
+    LosingChase,
     Attacking
 }
