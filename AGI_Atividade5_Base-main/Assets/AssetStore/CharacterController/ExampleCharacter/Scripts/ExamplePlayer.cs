@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using KinematicCharacterController;
-using KinematicCharacterController.Examples;
+﻿using UnityEngine;
 
 namespace KinematicCharacterController.Examples
 {
@@ -31,7 +27,7 @@ namespace KinematicCharacterController.Examples
 
         private void Update()
         {
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0) && Time.timeScale != 0)
             {
                 Cursor.lockState = CursorLockMode.Locked;
             }

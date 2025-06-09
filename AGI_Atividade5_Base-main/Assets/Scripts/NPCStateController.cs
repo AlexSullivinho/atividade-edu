@@ -1,12 +1,13 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.AI;
+using KinematicCharacterController.Examples;
 
 public class NPCStatesController : MonoBehaviour
 {
     [Header("Estados dos Npcs")]
     public NPCStates currentState = NPCStates.Walking;
-    public TextMeshPro StateText;
+    public TextMeshProUGUI StateText;
     public NavMeshAgent agent;
 
     [Header("Pontos de patrulha")]
@@ -19,25 +20,64 @@ public class NPCStatesController : MonoBehaviour
     private int currentSearchIndex;
     private Vector3 heardPosition;
 
+    [Header("Perceguir Jogador")]
+    AudioSource Alert;
+    bool PlayOnce = true;
+    private Transform Player;
+    public Transform SearchPoint1;
+    public Transform SearchPoint2;
+    public Transform SearchPoint3;
+    public bool CanSee;
+
+    [Header("Atacar Jogador")]
+    float wait;
+
+    [Header("Anim")]
+    public Animator anim;
+
     private float searchTime = 5f;
     private float elapsedSearchTime = 0f;
 
     private void Start()
     {
+        Alert = GetComponent<AudioSource>();
+        Player = FindFirstObjectByType<ExampleCharacterController>().transform;
         UpdateState(NPCStates.Walking);
         NextPatrolPoint();
     }
 
     void FixedUpdate()
     {
+        anim.SetBool("Moving", currentState == NPCStates.Walking);
+        anim.SetBool("Attacking", currentState == NPCStates.Attacking);
+        anim.SetBool("Running", (currentState == NPCStates.Searching || currentState == NPCStates.Chasing));
+        if (wait > 0)
+        wait -= Time.deltaTime;
         switch (currentState)
         {
             case NPCStates.Walking:
+                PlayOnce = true;
                 if (!agent.pathPending && agent.remainingDistance < 0.5f)
                     NextPatrolPoint();
                 break;
 
             case NPCStates.HeardNoise:
+                if (!agent.pathPending && agent.remainingDistance < 0.5f)
+                {
+                    if (currentSearchPoints != null && currentSearchPoints.Length > 0)
+                    {
+                        currentSearchIndex = 0;
+                        agent.SetDestination(currentSearchPoints[currentSearchIndex].position);
+                        UpdateState(NPCStates.Searching);
+                    }
+                    else
+                    {
+                        UpdateState(NPCStates.GaveUpSearch);
+                    }
+                }
+                break;
+
+            case NPCStates.LosingChase:
                 if (!agent.pathPending && agent.remainingDistance < 0.5f)
                 {
                     if (currentSearchPoints != null && currentSearchPoints.Length > 0)
@@ -74,6 +114,42 @@ public class NPCStatesController : MonoBehaviour
                     UpdateState(NPCStates.GaveUpSearch);
                 }
                 break;
+            case NPCStates.Chasing:
+                agent.SetDestination(Player.position);
+                if (PlayOnce)
+                {
+                    Alert.Play();
+                    PlayOnce = false;
+                }
+                if (!CanSee)
+                {
+                    SearchPoint1.position = Player.position + Player.transform.forward * 10;
+                    SearchPoint2.position = Player.position + Player.transform.forward * 10 + Player.transform.right * 5;
+                    SearchPoint3.position = Player.position + Player.transform.forward * 10 - Player.transform.right * 5;
+                    Transform[] Lookers;
+                    Lookers = new Transform[3];
+                    Lookers[0] = SearchPoint1;
+                    Lookers[1] = SearchPoint2;
+                    Lookers[2] = SearchPoint3;
+                    HeardSound(Player.position, Lookers);
+                }
+                if (Vector3.Distance(transform.position, Player.position) <= 2)
+                {
+                    UpdateState(NPCStates.Attacking);
+                }
+                    break;
+            case NPCStates.Attacking:
+                if (Vector3.Distance(transform.position, Player.position) < 3 && wait <= 0)
+                {
+                    Debug.Log("Atack");
+                    WinConditions End = GameManager.FindFirstObjectByType<WinConditions>();
+                    End.TriggerGameOver();
+                }
+                else if (wait <= 0)
+                {
+                    UpdateState(NPCStates.Chasing);
+                }
+                break;
         }
     }
 
@@ -100,9 +176,20 @@ public class NPCStatesController : MonoBehaviour
                 agent.SetDestination(heardPosition);
                 break;
 
+            case NPCStates.LosingChase:
+                StateText.text = "NPC perdeu jogador de vista";
+                agent.speed = 5f;
+                lastPatrolPointBeforeSound = patrolPoints[currentPatrolPoint];
+                agent.SetDestination(heardPosition);
+                break;
+
             case NPCStates.Searching:
                 StateText.text = "NPC procurando o jogador";
                 elapsedSearchTime = 0f;
+                if (CanSee)
+                {
+                    UpdateState(NPCStates.Chasing);
+                }
                 break;
 
             case NPCStates.GaveUpSearch:
@@ -110,6 +197,19 @@ public class NPCStatesController : MonoBehaviour
                 currentSearchPoints = null;
                 agent.SetDestination(lastPatrolPointBeforeSound.position);
                 UpdateState(NPCStates.Walking);
+                break;
+
+            case NPCStates.Chasing:
+                StateText.text = "NPC te encontrou!";
+                agent.speed = 6f;
+                break;
+
+            case NPCStates.Attacking:
+                StateText.text = "NPC atacando!";
+                agent.SetDestination(transform.position);
+                agent.speed = 0;
+                if (wait <= 0)
+                wait = .5f;
                 break;
         }
     }
@@ -129,6 +229,13 @@ public class NPCStatesController : MonoBehaviour
             heardPosition = position;
             currentSearchPoints = searchPoints;
             UpdateState(NPCStates.HeardNoise);
+        }
+
+        if (currentState == NPCStates.Chasing)
+        {
+            heardPosition = position;
+            currentSearchPoints = searchPoints;
+            UpdateState(NPCStates.LosingChase);
         }
     }
 }
