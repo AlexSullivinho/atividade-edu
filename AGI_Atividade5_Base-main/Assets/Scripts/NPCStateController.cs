@@ -50,7 +50,6 @@ public class NPCStatesController : MonoBehaviour
         anim.SetBool("Running", (currentState == NPCStates.Searching || currentState == NPCStates.Chasing));
         if (wait > 0)
         wait -= Time.deltaTime;
-        Debug.Log(Vector3.Distance(transform.position, Player.position));
         switch (currentState)
         {
             case NPCStates.Walking:
