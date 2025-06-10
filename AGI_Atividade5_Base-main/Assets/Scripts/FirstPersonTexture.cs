@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PersonTexture : MonoBehaviour
+public class FirstPersonTexture : MonoBehaviour
 {
     [SerializeField] GameObject Player;
 
